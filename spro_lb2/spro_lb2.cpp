@@ -1,7 +1,6 @@
 #include "headers.h"
 #include "resource.h"
 
-
 int WINAPI WinMain(
 	_In_ HINSTANCE hInstance,
 	_In_opt_ HINSTANCE hPrevInstance,
@@ -55,7 +54,7 @@ int WINAPI WinMain(
 			NULL);
 		throw;
 	}
-	
+	globalhIst = hInstance;
 	ShowWindow(hwnd,
 		nCmdShow);
 	UpdateWindow(hwnd);
@@ -83,8 +82,15 @@ LRESULT CALLBACK WndProc(
 
 		switch (wParam)
 		{
-		case ID_CREATE_FILE:
-			
+		case ID_CREATE_FILE:	
+			DialogBoxParam(
+				globalhIst,
+				MAKEINTRESOURCE(IDD_DIALOG1),
+				hWnd,
+				DlgProc,
+				0
+			);
+
 			break;
 		case ID_DELETE_FILE:
 			break;
@@ -92,9 +98,9 @@ LRESULT CALLBACK WndProc(
 			break;
 		}
 		break;
-	
 	case WM_DESTROY:
 		PostQuitMessage(69);
+		
 		break;
 	default:
 		return DefWindowProc(hWnd, message, wParam, lParam);
@@ -102,4 +108,28 @@ LRESULT CALLBACK WndProc(
 	}
 
 }
-
+INT_PTR CALLBACK DlgProc(
+	_In_ HWND   hWnd,
+	_In_ UINT   message,
+	_In_ WPARAM wParam,
+	_In_ LPARAM lParam
+)
+{
+	
+	switch (message)
+	{
+	case WM_INITDIALOG:
+		MessageBox(
+			hWnd,
+			_T("Hello from dialog"),
+			_T("Dialog message box"),
+			MB_OK
+		);
+		break;
+	case WM_CLOSE:
+		EndDialog(hWnd,0);
+		return FALSE;
+		break;
+	}
+	return FALSE;
+}
