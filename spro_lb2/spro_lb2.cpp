@@ -87,12 +87,19 @@ LRESULT CALLBACK WndProc(
 				globalhIst,
 				MAKEINTRESOURCE(IDD_DIALOG1),
 				hWnd,
-				DlgProc,
+				DlgProc_forCreate,
 				0
 			);
 
 			break;
 		case ID_DELETE_FILE:
+			DialogBoxParam(
+				globalhIst,
+				MAKEINTRESOURCE(IDD_DIALOG2),
+				hWnd,
+				DlgProc_forDelete,
+				0
+			);
 			break;
 		default:
 			break;
@@ -108,7 +115,7 @@ LRESULT CALLBACK WndProc(
 	}
 
 }
-INT_PTR CALLBACK DlgProc(
+INT_PTR CALLBACK DlgProc_forCreate(
 	_In_ HWND   hWnd,
 	_In_ UINT   message,
 	_In_ WPARAM wParam,
@@ -119,15 +126,30 @@ INT_PTR CALLBACK DlgProc(
 	switch (message)
 	{
 	case WM_INITDIALOG:
-		MessageBox(
-			hWnd,
-			_T("Hello from dialog"),
-			_T("Dialog message box"),
-			MB_OK
-		);
+
 		break;
 	case WM_CLOSE:
 		EndDialog(hWnd,0);
+		return FALSE;
+		break;
+	}
+	return FALSE;
+}
+INT_PTR CALLBACK DlgProc_forDelete(
+	_In_ HWND   hWnd,
+	_In_ UINT   message,
+	_In_ WPARAM wParam,
+	_In_ LPARAM lParam
+)
+{
+
+	switch (message)
+	{
+	case WM_INITDIALOG:
+
+		break;
+	case WM_CLOSE:
+		EndDialog(hWnd, 0);
 		return FALSE;
 		break;
 	}
