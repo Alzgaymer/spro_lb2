@@ -126,7 +126,36 @@ INT_PTR CALLBACK DlgProc_forCreate(
 	switch (message)
 	{
 	case WM_INITDIALOG:
-
+		::hwnd_textpox = CreateWindow(
+			_T("edit"),
+			_T(".txt"),
+			WS_CHILD | WS_VISIBLE | WS_BORDER | ES_RIGHT,
+			90, 50,
+			110, 20,
+			hWnd, 0, 0, 0);
+		break;
+	case WM_COMMAND:
+		switch (wParam)
+		{
+		case IDOK:
+			MessageBox(
+				hWnd,
+				_T("You pressed OK button!"),
+				_T("Dialog message"),
+				0
+			);
+			break;
+		case IDCANCEL:
+			MessageBox(
+				hWnd,
+				_T("You pressed CANCEL button!"),
+				_T("Dialog message"),
+				0
+			);
+			break;
+		default:
+			break;
+		}
 		break;
 	case WM_CLOSE:
 		EndDialog(hWnd,0);
@@ -142,11 +171,40 @@ INT_PTR CALLBACK DlgProc_forDelete(
 	_In_ LPARAM lParam
 )
 {
-
 	switch (message)
 	{
 	case WM_INITDIALOG:
-
+		//initializing a textbox
+		::hwnd_textpox = CreateWindow(
+			_T("edit"),
+			_T(".txt"),
+			WS_CHILD | WS_VISIBLE | WS_BORDER | ES_RIGHT,
+			90,50,
+			110, 20,
+			hWnd, 0, 0, 0);
+		break;
+	case WM_COMMAND:
+		switch (wParam)
+		{
+		case IDOK:
+			MessageBox(
+				hWnd,
+				_T("You pressed OK button!"),
+				_T("Dialog message"),
+				0
+			);
+			break;
+		case IDCANCEL:
+			MessageBox(
+				hWnd,
+				_T("You pressed CANCEL button!"),
+				_T("Dialog message"),
+				0
+			);
+			break;
+		default:
+			break;
+		}
 		break;
 	case WM_CLOSE:
 		EndDialog(hWnd, 0);

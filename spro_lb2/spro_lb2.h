@@ -6,6 +6,7 @@ static const auto MaxPixelsFSX = GetSystemMetrics(SM_CXFULLSCREEN);
 static const auto MaxPixelsFSY = GetSystemMetrics(SM_CYFULLSCREEN);
 
 static HINSTANCE globalhIst;
+static HWND hwnd_textpox;
 #pragma endregion
 
 LRESULT CALLBACK WndProc(
