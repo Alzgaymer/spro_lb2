@@ -1,4 +1,4 @@
-#include "headers.h"
+﻿#include "headers.h"
 #include "resource.h"
 
 int WINAPI WinMain(
@@ -132,26 +132,46 @@ INT_PTR CALLBACK DlgProc_forCreate(
 			WS_CHILD | WS_VISIBLE | WS_BORDER | ES_RIGHT,
 			90, 50,
 			110, 20,
-			hWnd, 0, 0, 0);
+			hWnd, (HMENU)ID_TEXTBOX, 0, 0);
 		break;
 	case WM_COMMAND:
 		switch (wParam)
 		{
 		case IDOK:
-			MessageBox(
-				hWnd,
-				_T("You pressed OK button!"),
-				_T("Dialog message"),
-				0
-			);
+			//get text from textbox
+			GetWindowText(hwnd_textpox, FileName, 32);
+
+			File = FileName;
+			//check if file name correct
+			if (CheckFileName(File) == FALSE)
+			{
+				MessageBox(
+					hWnd,
+					_T("Wrong file name!"),
+					_T("Create file error"),
+					MB_OK | MB_ICONWARNING 
+				);
+			}
+			//creating file
+			File = _T("C:\\Users\\Notebook\\OneDrive\\Рабочий стол\\") + File;
+			hFile = CreateFile(&File[0], GENERIC_READ, 0, NULL,
+				OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+			if (INVALID_HANDLE_VALUE == hFile) 
+			{
+				MessageBox(
+					hWnd,
+					_T("File isn`t created!"),
+					_T("Create file error"),
+					MB_OK | MB_ICONWARNING
+				);
+				SendMessage(hWnd, WM_CLOSE, wParam, lParam);
+			}
+			//end dialog
+			SendMessage(hWnd, WM_CLOSE, wParam, lParam);
 			break;
 		case IDCANCEL:
-			MessageBox(
-				hWnd,
-				_T("You pressed CANCEL button!"),
-				_T("Dialog message"),
-				0
-			);
+			//end dialog
+			SendMessage(hWnd, WM_CLOSE, wParam, lParam);
 			break;
 		default:
 			break;
@@ -181,26 +201,17 @@ INT_PTR CALLBACK DlgProc_forDelete(
 			WS_CHILD | WS_VISIBLE | WS_BORDER | ES_RIGHT,
 			90,50,
 			110, 20,
-			hWnd, 0, 0, 0);
+			hWnd, (HMENU)ID_TEXTBOX, 0, 0);
 		break;
 	case WM_COMMAND:
 		switch (wParam)
 		{
 		case IDOK:
-			MessageBox(
-				hWnd,
-				_T("You pressed OK button!"),
-				_T("Dialog message"),
-				0
-			);
+
 			break;
 		case IDCANCEL:
-			MessageBox(
-				hWnd,
-				_T("You pressed CANCEL button!"),
-				_T("Dialog message"),
-				0
-			);
+			//end dialog
+			SendMessage(hWnd, WM_CLOSE, wParam, lParam);
 			break;
 		default:
 			break;
@@ -212,4 +223,13 @@ INT_PTR CALLBACK DlgProc_forDelete(
 		break;
 	}
 	return FALSE;
+}
+bool CheckFileName(const wstring& str)
+//checks if file name (.) and if it has file extension after (.)
+{
+	if (str.empty() || str.find(_T(".")) == -1 || str.substr(str.find(_T(".")), str.size() - str.find(_T("."))) == _T(""))
+	{
+		return FALSE;
+	}
+	return TRUE;
 }

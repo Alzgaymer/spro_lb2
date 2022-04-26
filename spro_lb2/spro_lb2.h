@@ -7,6 +7,11 @@ static const auto MaxPixelsFSY = GetSystemMetrics(SM_CYFULLSCREEN);
 
 static HINSTANCE globalhIst;
 static HWND hwnd_textpox;
+#define ID_TEXTBOX 001
+using std::wstring;
+static TCHAR FileName[32];
+static	wstring File; 
+static HANDLE hFile;
 #pragma endregion
 
 LRESULT CALLBACK WndProc(
@@ -28,3 +33,4 @@ INT_PTR CALLBACK DlgProc_forDelete(
 	_In_ WPARAM wParam,
 	_In_ LPARAM lParam
 );
+bool CheckFileName(const wstring&);
