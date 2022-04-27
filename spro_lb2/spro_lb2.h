@@ -10,8 +10,10 @@ static HWND hwnd_textpox;
 #define ID_TEXTBOX 001
 using std::wstring;
 static TCHAR FileName[32];
-static	wstring File; 
-static HANDLE hFile;
+static	wstring wFileName; 
+static HANDLE hFileCreate;
+static WIN32_FIND_DATA FileData;
+static HANDLE hFileFind;
 #pragma endregion
 
 LRESULT CALLBACK WndProc(

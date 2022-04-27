@@ -138,12 +138,14 @@ INT_PTR CALLBACK DlgProc_forCreate(
 		switch (wParam)
 		{
 		case IDOK:
+			//clear the buff
+			wFileName.clear();
 			//get text from textbox
 			GetWindowText(hwnd_textpox, FileName, 32);
 
-			File = FileName;
+			wFileName = FileName;
 			//check if file name correct
-			if (CheckFileName(File) == FALSE)
+			if (CheckFileName(wFileName) == FALSE)
 			{
 				MessageBox(
 					hWnd,
@@ -153,10 +155,28 @@ INT_PTR CALLBACK DlgProc_forCreate(
 				);
 			}
 			//creating file
-			File = _T("C:\\Users\\Notebook\\OneDrive\\Рабочий стол\\") + File;
-			hFile = CreateFile(&File[0], GENERIC_READ, 0, NULL,
-				OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-			if (INVALID_HANDLE_VALUE == hFile) 
+			wFileName = _T("C:\\Users\\Notebook\\OneDrive\\Рабочий стол\\") + wFileName;
+			//finding file, if it`s exist - end the dilog
+			hFileFind = FindFirstFile(&wFileName[0], &FileData);
+			if (hFileFind != INVALID_HANDLE_VALUE)
+			{
+				MessageBox(
+					hWnd,
+					_T("File is already exist!"),
+					_T("Create file error"),
+					MB_OK | MB_ICONWARNING
+				);
+				CloseHandle(hFileFind);
+				//end dialog
+				SendMessage(hWnd, WM_CLOSE, wParam, lParam);
+				break;
+			}
+			hFileCreate = CreateFile(
+				&wFileName[0],	
+				GENERIC_WRITE, 0, NULL,
+				CREATE_NEW,
+				FILE_ATTRIBUTE_NORMAL, NULL);
+			if (INVALID_HANDLE_VALUE == hFileCreate) 
 			{
 				MessageBox(
 					hWnd,
@@ -164,8 +184,11 @@ INT_PTR CALLBACK DlgProc_forCreate(
 					_T("Create file error"),
 					MB_OK | MB_ICONWARNING
 				);
+				
+				//end dialog
 				SendMessage(hWnd, WM_CLOSE, wParam, lParam);
 			}
+			CloseHandle(hFileCreate);
 			//end dialog
 			SendMessage(hWnd, WM_CLOSE, wParam, lParam);
 			break;
@@ -207,7 +230,48 @@ INT_PTR CALLBACK DlgProc_forDelete(
 		switch (wParam)
 		{
 		case IDOK:
+			//clear the buff
+			wFileName.clear();
+			//get text from textbox
+			GetWindowText(hwnd_textpox, FileName, 32);
 
+			wFileName = FileName;
+			//check if file name correct
+			if (CheckFileName(wFileName) == FALSE)
+			{
+				MessageBox(
+					hWnd,
+					_T("Wrong file name!"),
+					_T("Delete file error"),
+					MB_OK | MB_ICONWARNING
+				);
+			}
+			//setting up the path to the desktop
+			wFileName = _T("C:\\Users\\Notebook\\OneDrive\\Рабочий стол\\") + wFileName;
+			hFileFind = FindFirstFile(&wFileName[0], &FileData);
+			if (hFileFind == INVALID_HANDLE_VALUE)
+			{
+				MessageBox(
+					hWnd,
+					_T("File isn`t exist!"),
+					_T("Delete file error"),
+					MB_OK | MB_ICONWARNING
+				);
+				CloseHandle(hFileFind);
+				//end dialog
+				SendMessage(hWnd, WM_CLOSE, wParam, lParam);
+				break;
+			}
+			DeleteFile(&wFileName[0]);
+			MessageBox(
+				hWnd,
+				_T("File succesfully deleted!"),
+				_T("Delete file info"),
+				MB_OK | MB_ICONINFORMATION
+			);
+			CloseHandle(hFileCreate);
+			//end dialog
+			SendMessage(hWnd, WM_CLOSE, wParam, lParam);
 			break;
 		case IDCANCEL:
 			//end dialog
