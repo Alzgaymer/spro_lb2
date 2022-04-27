@@ -6,7 +6,6 @@ static const auto MaxPixelsFSX = GetSystemMetrics(SM_CXFULLSCREEN);
 static const auto MaxPixelsFSY = GetSystemMetrics(SM_CYFULLSCREEN);
 
 static HINSTANCE globalhIst;
-static HWND globalHWnd;
 static HWND hwnd_textpox;
 #define ID_TEXTBOX 001
 using std::wstring;

@@ -1,6 +1,8 @@
 ﻿#include "headers.h"
 #include "resource.h"
-
+// for correct work need c++20 or newer
+// UNICODE character set
+// and Linker\system\subsystem\windows
 int WINAPI WinMain(
 	_In_ HINSTANCE hInstance,
 	_In_opt_ HINSTANCE hPrevInstance,
