@@ -84,14 +84,14 @@ LRESULT CALLBACK WndProc(
 		{
 		case ID_CREATE_FILE:	
 			DialogBoxParam(
-				globalhIst,
+				::globalhIst,
 				MAKEINTRESOURCE(IDD_DIALOG1),
 				hWnd,
 				DlgProc_forCreate,
 				0
 			);
-
 			break;
+
 		case ID_DELETE_FILE:
 			DialogBoxParam(
 				globalhIst,
@@ -101,6 +101,7 @@ LRESULT CALLBACK WndProc(
 				0
 			);
 			break;
+
 		default:
 			break;
 		}
@@ -115,6 +116,7 @@ LRESULT CALLBACK WndProc(
 	}
 
 }
+//dialog message receiver for (Create file)`s menu
 INT_PTR CALLBACK DlgProc_forCreate(
 	_In_ HWND   hWnd,
 	_In_ UINT   message,
@@ -125,10 +127,11 @@ INT_PTR CALLBACK DlgProc_forCreate(
 	
 	switch (message)
 	{
+	//initializing the dialog window
 	case WM_INITDIALOG:
 		::hwnd_textpox = CreateWindow(
-			_T("edit"),
-			_T(".txt"),
+			_T("edit"),										//textbox
+			_T(".txt"),										//value which shows by start
 			WS_CHILD | WS_VISIBLE | WS_BORDER | ES_RIGHT,
 			90, 50,
 			110, 20,
@@ -142,7 +145,7 @@ INT_PTR CALLBACK DlgProc_forCreate(
 			wFileName.clear();
 			//get text from textbox
 			GetWindowText(hwnd_textpox, FileName, 32);
-
+			//copying TCHAR to std::wstring
 			wFileName = FileName;
 			//check if file name correct
 			if (CheckFileName(wFileName) == FALSE)
@@ -154,10 +157,11 @@ INT_PTR CALLBACK DlgProc_forCreate(
 					MB_OK | MB_ICONWARNING 
 				);
 			}
-			//creating file
+			//adding to the file path the desktop path (for correct work if need change `Notebook` to your username)
 			wFileName = _T("C:\\Users\\Notebook\\OneDrive\\Рабочий стол\\") + wFileName;
 			//finding file, if it`s exist - end the dilog
 			hFileFind = FindFirstFile(&wFileName[0], &FileData);
+			//checks if file is already exist
 			if (hFileFind != INVALID_HANDLE_VALUE)
 			{
 				MessageBox(
@@ -171,11 +175,13 @@ INT_PTR CALLBACK DlgProc_forCreate(
 				SendMessage(hWnd, WM_CLOSE, wParam, lParam);
 				break;
 			}
+			//creating file
 			hFileCreate = CreateFile(
 				&wFileName[0],	
 				GENERIC_WRITE, 0, NULL,
 				CREATE_NEW,
 				FILE_ATTRIBUTE_NORMAL, NULL);
+			//checks if file wasn`t created
 			if (INVALID_HANDLE_VALUE == hFileCreate) 
 			{
 				MessageBox(
@@ -216,11 +222,12 @@ INT_PTR CALLBACK DlgProc_forDelete(
 {
 	switch (message)
 	{
+	//initializing a dialog win 
 	case WM_INITDIALOG:
 		//initializing a textbox
 		::hwnd_textpox = CreateWindow(
-			_T("edit"),
-			_T(".txt"),
+			_T("edit"),										//textbox								
+			_T(".txt"),										//value which shows by start
 			WS_CHILD | WS_VISIBLE | WS_BORDER | ES_RIGHT,
 			90,50,
 			110, 20,
@@ -234,21 +241,13 @@ INT_PTR CALLBACK DlgProc_forDelete(
 			wFileName.clear();
 			//get text from textbox
 			GetWindowText(hwnd_textpox, FileName, 32);
-
+			//copying TCHAR to std::wstring
 			wFileName = FileName;
-			//check if file name correct
-			if (CheckFileName(wFileName) == FALSE)
-			{
-				MessageBox(
-					hWnd,
-					_T("Wrong file name!"),
-					_T("Delete file error"),
-					MB_OK | MB_ICONWARNING
-				);
-			}
 			//setting up the path to the desktop
 			wFileName = _T("C:\\Users\\Notebook\\OneDrive\\Рабочий стол\\") + wFileName;
+			//finding file
 			hFileFind = FindFirstFile(&wFileName[0], &FileData);
+			//if NOT found repeat dialog delete box
 			if (hFileFind == INVALID_HANDLE_VALUE)
 			{
 				MessageBox(
@@ -259,10 +258,12 @@ INT_PTR CALLBACK DlgProc_forDelete(
 				);
 				CloseHandle(hFileFind);
 				//end dialog
-				SendMessage(hWnd, WM_CLOSE, wParam, lParam);
+				return FALSE;
 				break;
 			}
-			DeleteFile(&wFileName[0]);
+			//deletes file (&wFileName[0] is a converting a wstring to LPCWSTR)
+			DeleteFile(& wFileName[0]);
+			//throws a message box about succesfull deleting
 			MessageBox(
 				hWnd,
 				_T("File succesfully deleted!"),
@@ -289,9 +290,10 @@ INT_PTR CALLBACK DlgProc_forDelete(
 	return FALSE;
 }
 bool CheckFileName(const wstring& str)
-//checks if file name (.) and if it has file extension after (.)
-{
-	if (str.empty() || str.find(_T(".")) == -1 || str.substr(str.find(_T(".")), str.size() - str.find(_T("."))) == _T(""))
+//checks if file name correct
+//if successful returns TRUE(1)
+{	//(if it is empty) (if the dot was NOT found) (if the file extension after (.) was NOT declared)
+ 	if (str.empty() || str.find(_T(".")) == -1 || str.substr(str.find(_T("."))+1, str.size() - str.find(_T("."))) == _T("\0"))
 	{
 		return FALSE;
 	}
