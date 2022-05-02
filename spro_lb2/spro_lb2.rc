@@ -56,6 +56,8 @@ BEGIN
     BEGIN
         MENUITEM "Create file",                 40001
         MENUITEM "Delete file",                 40002
+        MENUITEM "Move",                        ID_FILE_MOVE
+        MENUITEM "File info",                   40008
     END
 END
 
