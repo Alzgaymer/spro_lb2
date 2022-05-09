@@ -400,8 +400,8 @@ void DeleteFileByFormat(HWND hWnd, int format)
 			output += "\r\n\r\n";
 			output += "Last write time: " + to_string(stAccess.wDay) + "/" + to_string(stAccess.wMonth) + "/" + to_string(stAccess.wYear) + "  " + to_string(stAccess.wHour) + ":" + to_string(stAccess.wSecond) + ":" + to_string(stAccess.wMilliseconds);
 			wstring wOutput = wstring(output.begin(), output.end());
-			const wchar_t* wcOutput = wOutput.c_str();
-			MessageBox(hWnd, wcOutput, L"File info", MB_OK);
+			
+			MessageBox(hWnd, wOutput.c_str(), L"File info", MB_OK);
 			return;
 		}
 		DeleteFile(ofn.lpstrFile);
