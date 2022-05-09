@@ -13,11 +13,11 @@ static HWND main_text_box;
 static bool someFileIsOpen = false;
 static TCHAR FileName[32];
 static	wstring wFileName; 
-static HANDLE hFileCreate;
+static HANDLE hFileCreate = nullptr;
 static WIN32_FIND_DATA FileData;
 static RECT rt;
-static HANDLE hFileFind;
-static BY_HANDLE_FILE_INFORMATION FileInfo{0};
+static HANDLE hFileFind = nullptr;
+
 #pragma endregion
 
 LRESULT CALLBACK WndProc(
@@ -40,5 +40,6 @@ INT_PTR CALLBACK DlgProc_forDelete(
 	_In_ LPARAM lParam
 );
 bool CheckFileName(const wstring&);
-bool ChoseFile(const std::wstring&, HWND hWnd);
+
 void ExtractData(const BY_HANDLE_FILE_INFORMATION&, HWND);
+void DeleteFileByFormat(HWND hWnd, int format);

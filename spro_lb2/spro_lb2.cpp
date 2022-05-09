@@ -100,7 +100,12 @@ LRESULT CALLBACK WndProc(
 				0
 			);
 			break;
-
+		case ID_DELETEFILE_ONLYEXE:
+			DeleteFileByFormat(hWnd, 0);
+			break;
+		case ID_DELETEFILE_ONLYTXT:
+			DeleteFileByFormat(hWnd, 1);
+			break;
 		case ID_DELETE_FILE:
 			DialogBoxParam(
 				globalhIst,
@@ -111,7 +116,7 @@ LRESULT CALLBACK WndProc(
 			);
 			break;
 		case ID_FILE_MOVE:
-			ChoseFile(L".txt", hWnd);
+			DeleteFileByFormat( hWnd,3);
 			initialLocation = std::string(wFileName.begin(), wFileName.end());
 			backslashPos = initialLocation.find_last_of("\\", wFileName.size() - 1);
 			wCutLocation = wFileName.substr(backslashPos + 1, wFileName.size() - backslashPos);
@@ -122,27 +127,8 @@ LRESULT CALLBACK WndProc(
 			MoveFile(wcOldLocation, wcNewLocation);
 			break;
 		case ID_FILE_FILEINFO:
-			ChoseFile(L".txt", hWnd);
-			hFileFind = CreateFileW(&wFileName[0], 0,
-				FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
-				OPEN_EXISTING,
-				FILE_ATTRIBUTE_NORMAL, NULL);
-			ZeroMemory(&FileInfo, sizeof(BY_HANDLE_FILE_INFORMATION));
-
-			if (!GetFileInformationByHandle(hFileFind, &FileInfo))
-			{
-				if (hFileFind == INVALID_HANDLE_VALUE)
-				{
-					MessageBox(hWnd, L"Handle file error", L"FILE INFO ERROR", MB_OK | MB_ICONERROR);
-
-					return 0;
-				}
-				MessageBox(hWnd, L"Cann`t get information from file", L"FILE INFO ERROR", MB_OK | MB_ICONERROR);
-				return 0;
-			}
-			else
-				ExtractData(FileInfo, hWnd);
-
+			DeleteFileByFormat(hWnd, 0x104);
+			
 			break;
 		default:
 			break;
@@ -209,15 +195,32 @@ INT_PTR CALLBACK DlgProc_forCreate(
 			//checks if file is already exist
 			if (hFileFind != INVALID_HANDLE_VALUE)
 			{
-				MessageBox(
+				if(auto returnMessage(MessageBox(
 					hWnd,
-					_T("File is already exist!"),
+					_T("File is already exist! Would u like to rewrite it!"),
 					_T("Create file error"),
-					MB_OK | MB_ICONWARNING
-				);
-				CloseHandle(hFileFind);
+					MB_YESNO | MB_ICONWARNING
+				)); returnMessage == IDYES)
+				{
+					FindClose(hFileFind);
+
+					DeleteFile(&wFileName[0]);
+				
+					auto h = CreateFile(
+						&wFileName[0],
+						GENERIC_WRITE, 0, NULL,
+						CREATE_ALWAYS,
+						FILE_ATTRIBUTE_NORMAL, NULL);
+
+					//end dialog
+					CloseHandle(h);
+					SendMessage(hWnd, WM_CLOSE, wParam, lParam);
+				}
+				FindClose(hFileFind);
+
 				//end dialog
 				SendMessage(hWnd, WM_CLOSE, wParam, lParam);
+				/*return 0;*/
 				break;
 			}
 			//creating file
@@ -231,7 +234,7 @@ INT_PTR CALLBACK DlgProc_forCreate(
 			{
 				MessageBox(
 					hWnd,
-					_T("File isn`t created!"),
+					_T("File hasn`t created!"),
 					_T("Create file error"),
 					MB_OK | MB_ICONWARNING
 				);
@@ -301,7 +304,7 @@ INT_PTR CALLBACK DlgProc_forDelete(
 					_T("Delete file error"),
 					MB_OK | MB_ICONWARNING
 				);
-				CloseHandle(hFileFind);
+				FindClose(hFileFind);
 				//end dialog
 				return FALSE;
 				break;
@@ -344,29 +347,25 @@ bool CheckFileName(const wstring& str)
 	}
 	return TRUE;
 }
-bool ChoseFile(const std::wstring& str1, HWND hWnd)
-{
-	std::wstring str(str1);
 
-	OPENFILENAME ofn;       // common dialog box structure
-	TCHAR szFile[256];       // buffer for file name
-	HANDLE hf; // open file handle
-	if (str == _T(".txt"))
-	{
-		str = _T("Text files\0*") + str;
-	}
-	else if (str == _T(".exe"))
-	{
-		str = _T("Execution files\0*") + str;
-	}
-	// Initialize OPENFILENAME
+
+void DeleteFileByFormat(HWND hWnd, int format)
+{
+	OPENFILENAME ofn;       // common dialog box structure 
+	TCHAR szFile[260];       // buffer for file name 
+	HANDLE hf; // open file handle 
+
+	// Initialize OPENFILENAME 
 	ZeroMemory(&ofn, sizeof(ofn));
 	ofn.lStructSize = sizeof(ofn);
 	ofn.hwndOwner = hWnd;
 	ofn.lpstrFile = szFile;
 	ofn.lpstrFile[0] = '\0';
 	ofn.nMaxFile = sizeof(szFile);
-	ofn.lpstrFilter = str.c_str();
+	if (format == 0x001)
+		ofn.lpstrFilter = L"Execution files\0*.exe";
+	else if( format == 0x000)
+		ofn.lpstrFilter = L"Text files\0*.txt";
 	ofn.nFilterIndex = 1;
 	ofn.lpstrFileTitle = NULL;
 	ofn.nMaxFileTitle = 0;
@@ -379,44 +378,32 @@ bool ChoseFile(const std::wstring& str1, HWND hWnd)
 			OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL,
 			(HANDLE)NULL);
 
-		DWORD dwBytesToRead = 1023;
-		DWORD bytesRead = 0;
-		byte byteBuffer[1024];
-		memset(&byteBuffer, 0, sizeof(byteBuffer));
-		ReadFile(hf, byteBuffer, dwBytesToRead, &bytesRead, NULL);
-
-		wchar_t buffer[1024];
-		memset(&buffer, 0, sizeof(byteBuffer));
-		for (int position = 0; position < 1023; position++)
-			buffer[position] = (wchar_t)byteBuffer[position];
-		SetWindowText(main_text_box, (LPCWSTR)buffer);
-
-		wFileName = ofn.lpstrFile;
-		
 		CloseHandle(hf);
-		return true; //succsesfull 
+		if (format == 0x003)
+		{
+			wFileName = ofn.lpstrFile;
+			return;
+		}
+		if (format == 0x104)
+		{
+			
+			using std::to_string;
+			WIN32_FILE_ATTRIBUTE_DATA fInfo;
+			GetFileAttributesEx(ofn.lpstrFile, GetFileExInfoStandard, &fInfo);
+			SYSTEMTIME stCreation, stAccess;
+			FileTimeToSystemTime(&(fInfo.ftCreationTime),&stCreation);
+			FileTimeToSystemTime(&(fInfo.ftLastWriteTime), &stAccess);
+			string output;
+			output += "File attiributes: " + to_string(fInfo.dwFileAttributes);
+			output += "\r\n\r\n";
+			output += "Creating time: " + to_string(stCreation.wDay) + "/" + to_string(stCreation.wMonth) + "/" + to_string(stCreation.wYear) + "  "  + to_string(stCreation.wHour) + ":" + to_string(stCreation.wSecond) + ":" + to_string(stCreation.wMilliseconds);
+			output += "\r\n\r\n";
+			output += "Last write time: " + to_string(stAccess.wDay) + "/" + to_string(stAccess.wMonth) + "/" + to_string(stAccess.wYear) + "  " + to_string(stAccess.wHour) + ":" + to_string(stAccess.wSecond) + ":" + to_string(stAccess.wMilliseconds);
+			wstring wOutput = wstring(output.begin(), output.end());
+			const wchar_t* wcOutput = wOutput.c_str();
+			MessageBox(hWnd, wcOutput, L"File info", MB_OK);
+			return;
+		}
+		DeleteFile(ofn.lpstrFile);
 	}
-	else return false;//unsuccsesfull
-}
-void ExtractData(const BY_HANDLE_FILE_INFORMATION& Info, HWND hWnd) 
-{
-	HDC WindowDC = GetDC(hWnd);
-	//HDC TemporaryDC = CreateCompatibleDC(WindowDC);
-	//
-	//GetWindowRect(hWnd, &rt);
-
-	//auto BitmapDC = CreateCompatibleBitmap(WindowDC, rt.right - rt.left, rt.bottom - rt.top);
-	//
-	////take bitmap as a dc
-	//SelectObject(TemporaryDC, BitmapDC);
-	wstring str{ L"LAST TIME WRITE: " };
-	str += Info.ftLastWriteTime.dwLowDateTime;
-	
-	//DrawText(WindowDC, L"1234567890", 11, &rt, 0);
-	TextOut(WindowDC, 0, 0, &str[0], str.size());
-	//SetWindowText(hWnd, &str[0]);
-	/*BitBlt(WindowDC, 0, 0, rt.right - rt.left, rt.bottom - rt.top, TemporaryDC, 0, 0, SRCCOPY);
-	
-	DeleteDC(TemporaryDC);
-	DeleteObject(BitmapDC);*/
 }

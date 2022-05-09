@@ -55,9 +55,13 @@ BEGIN
     POPUP "File"
     BEGIN
         MENUITEM "Create file",                 40001
-        MENUITEM "Delete file",                 40002
+        POPUP "Delete file"
+        BEGIN
+            MENUITEM "Only .exe",                   ID_DELETEFILE_ONLYEXE
+            MENUITEM "Only .txt",                   ID_DELETEFILE_ONLYTXT
+        END
         MENUITEM "Move",                        ID_FILE_MOVE
-        MENUITEM "File info",                   40008
+        MENUITEM "File info",                   ID_FILE_FILEINFO
     END
 END
 
